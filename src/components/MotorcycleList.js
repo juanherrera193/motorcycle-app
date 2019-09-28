@@ -1,35 +1,71 @@
 import React, { Component } from 'react';
-
+import { connect } from 'react-redux';
 import { Container, Row, Col, FormLabel, Card, ListGroup, ListGroupItem } from 'react-bootstrap';
 
+import { getMotorcyclesAction } from '../actions/motorcycleActions';
+
 class MotorcycleList extends Component {
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            getMotorcycles: this.props.response.getMotorcycles.response
+        };
+    }
+
+    componentDidMount() {
+        this.props.dispatch(getMotorcyclesAction());
+    }
+
+    componentWillReceiveProps(nextProps) {
+
+        if (this.props !== nextProps
+            && !this.props.response.getMotorcycles.hasOwnProperty('response')
+            && nextProps.response.getMotorcycles.hasOwnProperty('response')
+            && nextProps.response.getMotorcycles.response !== undefined) {
+            this.setState({ getMotorcycles: nextProps.response.getMotorcycles.response.response });
+        }
+    }
+
     render() {
+        let motorcyclesResponse = this.state.getMotorcycles;
+        console.log(motorcyclesResponse);
         return (
             <Container>
-
-                <Row className="justify-content-md-center">
-                    <Col sm={5}>
-                        <Card >
-                            <Card.Img variant="top" src="https://d2ukjpq35mtkrr.cloudfront.net/FotosVO/biz/BIG_jpg_mPAVP7.jpg" />
-                            <Card.Body>
-                                <Card.Title>Kawasaki Versys 650</Card.Title>
-                                <Card.Text>
-                                In excellent condition, it only has 5.000 kms, it is sold with saddlebags
-                            </Card.Text>
-                            </Card.Body>
-                            <ListGroup className="list-group-flush">
-                                <ListGroupItem><FormLabel>Mileage</FormLabel>: 5000 kms</ListGroupItem>
-                                <ListGroupItem><FormLabel>Subcategory</FormLabel>: Touring</ListGroupItem>
-                            </ListGroup>
-                        </Card>
-                    </Col>
-                </Row>
-                <hr />
-                
+                {motorcyclesResponse !== undefined ?
+                    motorcyclesResponse.map((motorcycle) =>
+                        <div key={motorcycle.id}>
+                            <Row className="justify-content-md-center" >
+                                <Col sm={5}>
+                                    <Card>
+                                        <Card.Img variant="top" src={motorcycle.photoUrl} />
+                                        <Card.Body>
+                                            <Card.Title>{motorcycle.brand} {motorcycle.reference}</Card.Title>
+                                            <Card.Text>
+                                                {motorcycle.description}
+                                            </Card.Text>
+                                        </Card.Body>
+                                        <ListGroup className="list-group-flush">
+                                            <ListGroupItem><FormLabel>Mileage</FormLabel>: {motorcycle.mileage} kms</ListGroupItem>
+                                            <ListGroupItem><FormLabel>Subcategory</FormLabel>: {motorcycle.subcategory}</ListGroupItem>
+                                        </ListGroup>
+                                    </Card>
+                                </Col>
+                            </Row>
+                            <hr />
+                        </div>
+                    )
+                    : <div />}
             </Container>
-
         )
     }
 }
 
-export default MotorcycleList;
+const mapStateToProps = (response) => {
+    console.log(response);
+    return {
+        response: response
+    }
+}
+
+export default connect(mapStateToProps)(MotorcycleList);
